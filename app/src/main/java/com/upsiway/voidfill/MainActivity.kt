@@ -10,7 +10,33 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
 import com.upsiway.voidfill.databinding.ActivityMainBinding
+import android.view.WindowManager
 
+class MainActivity : AppCompatActivity() {
+    private lateinit var canvasView: TileCanvasView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Set fullscreen mode
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
+
+        // Create canvas view
+        canvasView = TileCanvasView(this)
+        setContentView(canvasView)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Ensure any pending tile saves are completed
+        canvasView.savePendingTiles()
+    }
+}
+
+/*
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
@@ -56,4 +82,4 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
     }
-}
+}*/
