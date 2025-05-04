@@ -33,8 +33,8 @@ class TileCanvasView(context: Context) : View(context) {
 
     // Zoom and pan variables
     private var scale = 1.0f
-    private val minScale = 0.2f
-    private val maxScale = 5.0f
+    private val minScale = 1.0f
+    private val maxScale = 10.0f
     private var translateX = 0f
     private var translateY = 0f
     private var isPanning = false
@@ -109,10 +109,12 @@ class TileCanvasView(context: Context) : View(context) {
 
                 if (pointerCount == 1) {
                     // Start drawing with one finger
+                    // But don't draw at the initial point
                     isDrawing = true
                     lastX = x
                     lastY = y
-                    drawAtPoint(screenToCanvasX(x), screenToCanvasY(y))
+                    // No drawing on initial touch
+                    //drawAtPoint(screenToCanvasX(x).toInt(), screenToCanvasY(y).toInt())
                 }
                 return true
             }
@@ -126,9 +128,13 @@ class TileCanvasView(context: Context) : View(context) {
                     val canvasX = screenToCanvasX(x)
                     val canvasY = screenToCanvasY(y)
 
-                    // If moved enough since last point, draw
-                    if ((canvasX != screenToCanvasX(lastX) || canvasY != screenToCanvasY(lastY))) {
-                        drawAtPoint(canvasX, canvasY)
+                    // Use Bresenham's algorithm to ensure smooth line drawing
+                    val lastCanvasX = screenToCanvasX(lastX)
+                    val lastCanvasY = screenToCanvasY(lastY)
+
+                    if ((canvasX != lastCanvasX || canvasY != lastCanvasY)) {
+                        // Draw a line from last point to current point
+                        drawBresenhamLine(lastCanvasX.toInt(), lastCanvasY.toInt(), canvasX.toInt(), canvasY.toInt())
                         lastX = x
                         lastY = y
                     }
@@ -150,7 +156,12 @@ class TileCanvasView(context: Context) : View(context) {
             }
 
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_POINTER_DOWN -> {
-                // Handle finger count changes
+                // When a second finger is placed, stop drawing
+                if (event.actionMasked == MotionEvent.ACTION_POINTER_DOWN && isDrawing) {
+                    isDrawing = false
+                    // Save any modified tiles
+                    tileManager.saveModifiedTiles()
+                }
                 return true
             }
         }
@@ -176,11 +187,7 @@ class TileCanvasView(context: Context) : View(context) {
         invalidate()
     }
 
-    private fun drawAtPoint(canvasX: Float, canvasY: Float) {
-        // Convert canvas coordinates to pixel coordinates
-        val pixelX = canvasX.toInt()
-        val pixelY = canvasY.toInt()
-
+    private fun drawAtPoint(pixelX: Int, pixelY: Int) {
         // Draw with 2x2 brush size
         for (y in 0 until brushSize) {
             for (x in 0 until brushSize) {
@@ -189,6 +196,37 @@ class TileCanvasView(context: Context) : View(context) {
         }
 
         invalidate()
+    }
+
+    // Implement Bresenham's line algorithm for smooth line drawing
+    private fun drawBresenhamLine(x0: Int, y0: Int, x1: Int, y1: Int) {
+        val dx = Math.abs(x1 - x0)
+        val dy = Math.abs(y1 - y0)
+        val sx = if (x0 < x1) 1 else -1
+        val sy = if (y0 < y1) 1 else -1
+        var err = dx - dy
+
+        var x = x0
+        var y = y0
+
+        while (true) {
+            // Draw with 2x2 brush at this point
+            drawAtPoint(x, y)
+
+            // Exit condition
+            if (x == x1 && y == y1) break
+
+            // Calculate next point
+            val e2 = 2 * err
+            if (e2 > -dy) {
+                err -= dy
+                x += sx
+            }
+            if (e2 < dx) {
+                err += dx
+                y += sy
+            }
+        }
     }
 
     private fun setPixel(x: Int, y: Int, filled: Boolean) {
