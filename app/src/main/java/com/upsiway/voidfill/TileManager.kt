@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class TileManager(private val context: Context) {
     companion object {
-        const val TILE_SIZE = 256
+        const val TILE_SIZE = 2000
         private const val TILES_DIRECTORY = "tiles"
     }
 

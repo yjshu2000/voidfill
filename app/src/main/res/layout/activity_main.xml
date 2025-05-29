@@ -6,7 +6,79 @@
     android:background="@android:color/white"
     tools:context=".MainActivity">
 
-    <!-- The TileCanvasView will be created programmatically in MainActivity -->
+    <!-- canvas -->
+    <com.upsiway.voidfill.TileCanvasView
+        android:id="@+id/canvasView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Top Edge -->
+    <FrameLayout
+        android:id="@+id/topEdge"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="top"
+        android:clickable="true"
+        android:background="@drawable/edge_touch_feedback">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/baseline_keyboard_arrow_up_24"
+            android:contentDescription="@null" />
+    </FrameLayout>
+
+    <!-- Bottom Edge -->
+    <FrameLayout
+        android:id="@+id/bottomEdge"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:clickable="true"
+        android:background="@drawable/edge_touch_feedback">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/baseline_keyboard_arrow_down_24"
+            android:contentDescription="@null" />
+    </FrameLayout>
+
+    <!-- Left Edge -->
+    <FrameLayout
+        android:id="@+id/leftEdge"
+        android:layout_width="64dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:clickable="true"
+        android:background="@drawable/edge_touch_feedback">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/baseline_keyboard_arrow_left_24"
+            android:contentDescription="@null" />
+    </FrameLayout>
+
+    <!-- Right Edge -->
+    <FrameLayout
+        android:id="@+id/rightEdge"
+        android:layout_width="64dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:clickable="true"
+        android:background="@drawable/edge_touch_feedback">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/baseline_keyboard_arrow_right_24"
+            android:contentDescription="@null"/>
+    </FrameLayout>
 
 </FrameLayout>
 

@@ -25,8 +25,8 @@ class MainActivity : AppCompatActivity() {
         )
 
         // Create canvas view
-        canvasView = TileCanvasView(this)
-        setContentView(canvasView)
+        setContentView(R.layout.activity_main)
+        canvasView = findViewById(R.id.canvasView)
     }
 
     override fun onPause() {
