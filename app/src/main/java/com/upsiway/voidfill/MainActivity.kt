@@ -9,8 +9,11 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import com.upsiway.voidfill.databinding.ActivityMainBinding
 import android.view.WindowManager
+import android.widget.Button
+import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var canvasView: TileCanvasView
@@ -27,6 +30,44 @@ class MainActivity : AppCompatActivity() {
         // Create canvas view
         setContentView(R.layout.activity_main)
         canvasView = findViewById(R.id.canvasView)
+
+        val canvasView = findViewById<TileCanvasView>(R.id.canvasView)
+        val zoomInButton = findViewById<Button>(R.id.zoomInButton)
+        val zoomOutButton = findViewById<Button>(R.id.zoomOutButton)
+        val zoomDisplay = findViewById<TextView>(R.id.zoomDisplay)
+
+        // Initial zoom text
+        zoomDisplay.text = getString(R.string.zoom_display, canvasView.getZoomPercent())
+
+        zoomInButton.setOnClickListener {
+            canvasView.zoomIn()
+            zoomDisplay.text = getString(R.string.zoom_display, canvasView.getZoomPercent())
+
+        }
+
+        zoomOutButton.setOnClickListener {
+            canvasView.zoomOut()
+            zoomDisplay.text = getString(R.string.zoom_display, canvasView.getZoomPercent())
+
+        }
+
+        val panStepX = resources.displayMetrics.widthPixels / 5f
+        val panStepY = resources.displayMetrics.heightPixels / 5f
+
+        findViewById<View>(R.id.topEdge).setOnClickListener {
+            canvasView.panBy(0f, panStepY)
+        }
+        findViewById<View>(R.id.bottomEdge).setOnClickListener {
+            canvasView.panBy(0f, -panStepY)
+        }
+        findViewById<View>(R.id.leftEdge).setOnClickListener {
+            canvasView.panBy(panStepX, 0f)
+        }
+        findViewById<View>(R.id.rightEdge).setOnClickListener {
+            canvasView.panBy(-panStepX, 0f)
+        }
+
+
     }
 
     override fun onPause() {

@@ -1,86 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
     tools:context=".MainActivity">
 
-    <!-- canvas -->
-    <com.upsiway.voidfill.TileCanvasView
-        android:id="@+id/canvasView"
+    <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="48dp"
+        android:background="#EEEEEE"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:baselineAligned="true">
 
-    <!-- Top Edge -->
+        <Button
+            android:id="@+id/zoomOutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/minus"/>
+
+        <TextView
+            android:id="@+id/zoomDisplay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/zoom_display"
+            android:textSize="16sp"
+            android:paddingHorizontal="12dp"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/zoomInButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/plus" />
+    </LinearLayout>
+
     <FrameLayout
-        android:id="@+id/topEdge"
+        android:id="@+id/canvasFrame"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_gravity="top"
-        android:clickable="true"
-        android:background="@drawable/edge_touch_feedback">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/white"
+        tools:ignore="UselessParent">
+        <!-- canvas -->
+        <com.upsiway.voidfill.TileCanvasView
+            android:id="@+id/canvasView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            android:src="@drawable/baseline_keyboard_arrow_up_24"
-            android:contentDescription="@null" />
+        <!-- Top Edge -->
+        <FrameLayout
+            android:id="@+id/topEdge"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_gravity="top"
+            android:clickable="true"
+            android:background="@drawable/edge_touch_feedback">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_keyboard_arrow_up_24"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
+        <!-- Bottom Edge -->
+        <FrameLayout
+            android:id="@+id/bottomEdge"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_gravity="bottom"
+            android:clickable="true"
+            android:background="@drawable/edge_touch_feedback">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_keyboard_arrow_down_24"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
+        <!-- Left Edge -->
+        <FrameLayout
+            android:id="@+id/leftEdge"
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:clickable="true"
+            android:background="@drawable/edge_touch_feedback">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_keyboard_arrow_left_24"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
+        <!-- Right Edge -->
+        <FrameLayout
+            android:id="@+id/rightEdge"
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:clickable="true"
+            android:background="@drawable/edge_touch_feedback">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_keyboard_arrow_right_24"
+                android:contentDescription="@null"/>
+        </FrameLayout>
+
     </FrameLayout>
 
-    <!-- Bottom Edge -->
-    <FrameLayout
-        android:id="@+id/bottomEdge"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_gravity="bottom"
-        android:clickable="true"
-        android:background="@drawable/edge_touch_feedback">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            android:src="@drawable/baseline_keyboard_arrow_down_24"
-            android:contentDescription="@null" />
-    </FrameLayout>
-
-    <!-- Left Edge -->
-    <FrameLayout
-        android:id="@+id/leftEdge"
-        android:layout_width="64dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:clickable="true"
-        android:background="@drawable/edge_touch_feedback">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            android:src="@drawable/baseline_keyboard_arrow_left_24"
-            android:contentDescription="@null" />
-    </FrameLayout>
-
-    <!-- Right Edge -->
-    <FrameLayout
-        android:id="@+id/rightEdge"
-        android:layout_width="64dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="end"
-        android:clickable="true"
-        android:background="@drawable/edge_touch_feedback">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            android:src="@drawable/baseline_keyboard_arrow_right_24"
-            android:contentDescription="@null"/>
-    </FrameLayout>
-
-</FrameLayout>
+</LinearLayout>
 
 <!--
 <?xml version="1.0" encoding="utf-8"?>

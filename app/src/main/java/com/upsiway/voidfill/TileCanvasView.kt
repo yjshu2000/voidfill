@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -37,9 +38,18 @@ class TileCanvasView @JvmOverloads constructor(
     private var lastY = 0f
 
     // Zoom and pan variables
+    // NOTE: replacing the existing scale logic
+    private val zoomLevels = listOf(0.1f, 0.2f, 0.5f, 1.0f, 2.0f, 5.0f, 10.0f)
+    private var currentZoomIndex = zoomLevels.indexOf(1.0f)
+
+    val scale: Float
+        get() = zoomLevels[currentZoomIndex]
+    /*
     private var scale = 1.0f
     private val minScale = 1.0f
     private val maxScale = 10.0f
+     */
+
     private var translateX = 0f
     private var translateY = 0f
     private var isPanning = false
@@ -51,7 +61,7 @@ class TileCanvasView @JvmOverloads constructor(
     private val brushSize = 2
 
     // Scale gesture detector for pinch-to-zoom
-    private val scaleDetector = ScaleGestureDetector(context, ScaleListener())
+    //private val scaleDetector = ScaleGestureDetector(context, ScaleListener())
 
     init {
         // Set view properties
@@ -100,7 +110,7 @@ class TileCanvasView @JvmOverloads constructor(
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Process zoom gestures first
-        scaleDetector.onTouchEvent(event)
+        //scaleDetector.onTouchEvent(event)
 
         val pointerCount = event.pointerCount
         val x = event.x
@@ -205,8 +215,8 @@ class TileCanvasView @JvmOverloads constructor(
 
     // Implement Bresenham's line algorithm for smooth line drawing
     private fun drawBresenhamLine(x0: Int, y0: Int, x1: Int, y1: Int) {
-        val dx = Math.abs(x1 - x0)
-        val dy = Math.abs(y1 - y0)
+        val dx = abs(x1 - x0)
+        val dy = abs(y1 - y0)
         val sx = if (x0 < x1) 1 else -1
         val sy = if (y0 < y1) 1 else -1
         var err = dx - dy
@@ -283,6 +293,7 @@ class TileCanvasView @JvmOverloads constructor(
     }
 
     // Scale gesture listener for pinch-to-zoom
+    /*
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         private val focusPoint = PointF()
 
@@ -312,9 +323,37 @@ class TileCanvasView @JvmOverloads constructor(
             return true
         }
     }
+    */
 
     // Save any pending tiles (called from activity onPause)
     fun savePendingTiles() {
         tileManager.saveModifiedTiles()
     }
+
+    // zoom stuff?
+    fun zoomIn() {
+        if (currentZoomIndex < zoomLevels.size - 1) {
+            currentZoomIndex++
+            invalidate()
+        }
+    }
+
+    fun zoomOut() {
+        if (currentZoomIndex > 0) {
+            currentZoomIndex--
+            invalidate()
+        }
+    }
+
+    fun getZoomPercent(): Int {
+        return (scale * 100).toInt()
+    }
+
+    fun panBy(dx: Float, dy: Float) {
+        translateX += dx
+        translateY += dy
+        invalidate()
+    }
+
+
 }
