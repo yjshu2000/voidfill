@@ -333,16 +333,31 @@ class TileCanvasView @JvmOverloads constructor(
     // zoom stuff?
     fun zoomIn() {
         if (currentZoomIndex < zoomLevels.size - 1) {
-            currentZoomIndex++
-            invalidate()
+            val focusX = width / 2f
+            val focusY = height / 2f
+            applyZoomChange(currentZoomIndex + 1, focusX, focusY)
         }
     }
 
     fun zoomOut() {
         if (currentZoomIndex > 0) {
-            currentZoomIndex--
-            invalidate()
+            val focusX = width / 2f
+            val focusY = height / 2f
+            applyZoomChange(currentZoomIndex - 1, focusX, focusY)
         }
+    }
+
+    private fun applyZoomChange(newIndex: Int, focusX: Float, focusY: Float) {
+        val oldScale = scale
+        currentZoomIndex = newIndex
+        val newScale = scale
+        val scaleFactor = newScale / oldScale
+
+        // Adjust pan so that focus point stays fixed
+        translateX = focusX - (focusX - translateX) * scaleFactor
+        translateY = focusY - (focusY - translateY) * scaleFactor
+
+        invalidate()
     }
 
     fun getZoomPercent(): Int {
