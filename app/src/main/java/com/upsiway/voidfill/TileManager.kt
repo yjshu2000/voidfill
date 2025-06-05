@@ -1,6 +1,10 @@
 package com.upsiway.voidfill
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -9,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class TileManager(private val context: Context) {
     companion object {
-        const val TILE_SIZE = 2000
+        const val TILE_SIZE = 256
         private const val TILES_DIRECTORY = "tiles"
     }
 
@@ -20,7 +24,7 @@ class TileManager(private val context: Context) {
     private val modifiedTiles = mutableSetOf<Pair<Int, Int>>()
 
     // Get a tile at the specified coordinates, loading or creating it if necessary
-    fun getTile(tileX: Int, tileY: Int): Tile? {
+    fun getTile(tileX: Int, tileY: Int): Tile {
         val key = Pair(tileX, tileY)
 
         // Return from cache if available
@@ -131,12 +135,16 @@ class TileManager(private val context: Context) {
 
 // Represents a single 256x256 tile of pixels
 class Tile(val x: Int, val y: Int) {
-    // Store pixels as a 2D array of bits
-    // We're using BooleanArray for simplicity; in a more optimized implementation,
-    // we would pack these into a BitSet or similar structure for memory efficiency
+    // 2D boolean array to store filled pixel states
     private val pixels = Array(TileManager.TILE_SIZE) { BooleanArray(TileManager.TILE_SIZE) }
 
-    // Check if a pixel is filled (true = black, false = white)
+    // Cached bitmap used for drawing this tile efficiently
+    private var cachedBitmap: Bitmap? = null
+
+    // Flag to indicate if the bitmap needs to be regenerated
+    private var isDirty: Boolean = true
+
+    // Returns whether a specific pixel is filled
     fun getPixel(x: Int, y: Int): Boolean {
         if (x < 0 || x >= TileManager.TILE_SIZE || y < 0 || y >= TileManager.TILE_SIZE) {
             return false
@@ -144,18 +152,60 @@ class Tile(val x: Int, val y: Int) {
         return pixels[y][x]
     }
 
-    // Set a pixel to filled or not
+    // Sets a specific pixel as filled or not and marks the tile as dirty if changed
     fun setPixel(x: Int, y: Int, filled: Boolean) {
         if (x < 0 || x >= TileManager.TILE_SIZE || y < 0 || y >= TileManager.TILE_SIZE) {
             return
         }
-        pixels[y][x] = filled
+        if (pixels[y][x] != filled) {
+            pixels[y][x] = filled
+            isDirty = true // Mark bitmap as needing regeneration
+        }
     }
 
-    // Convert to byte array for storage
+    // Returns a cached bitmap representing this tile, rebuilding it if needed
+    fun getBitmap(): Bitmap {
+        if (isDirty || cachedBitmap == null) {
+            rebuildBitmap()
+        }
+        return cachedBitmap!!
+    }
+
+    // Rebuilds the bitmap from the pixel data
+    private fun rebuildBitmap() {
+        cachedBitmap = Bitmap.createBitmap(
+            TileManager.TILE_SIZE,
+            TileManager.TILE_SIZE,
+            Bitmap.Config.RGB_565  // Good balance of quality/memory
+        )
+
+        val canvas = Canvas(cachedBitmap!!)
+        val blackPaint = Paint().apply {
+            color = Color.BLACK
+            style = Paint.Style.FILL
+        }
+        val whitePaint = Paint().apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+
+        // Fill with white background first
+        canvas.drawRect(0f, 0f, TileManager.TILE_SIZE.toFloat(), TileManager.TILE_SIZE.toFloat(), whitePaint)
+
+        // Draw black pixels
+        for (y in 0 until TileManager.TILE_SIZE) {
+            for (x in 0 until TileManager.TILE_SIZE) {
+                if (pixels[y][x]) {
+                    canvas.drawRect(x.toFloat(), y.toFloat(), (x+1).toFloat(), (y+1).toFloat(), blackPaint)
+                }
+            }
+        }
+
+        isDirty = false
+    }
+
+    // Converts the pixel data to a compact byte array (1 bit per pixel)
     fun toByteArray(): ByteArray {
-        // Calculate the number of bytes needed to store all pixels
-        // Each pixel is 1 bit, so we need (TILE_SIZE * TILE_SIZE) / 8 bytes
         val numBytes = TileManager.TILE_SIZE * TileManager.TILE_SIZE / 8
         val result = ByteArray(numBytes)
 
@@ -164,12 +214,9 @@ class Tile(val x: Int, val y: Int) {
 
         for (y in 0 until TileManager.TILE_SIZE) {
             for (x in 0 until TileManager.TILE_SIZE) {
-                // If the pixel is filled, set the corresponding bit
                 if (pixels[y][x]) {
                     result[byteIndex] = (result[byteIndex].toInt() or (1 shl bitPosition)).toByte()
                 }
-
-                // Move to the next bit position
                 bitPosition--
                 if (bitPosition < 0) {
                     bitPosition = 7
@@ -181,19 +228,16 @@ class Tile(val x: Int, val y: Int) {
         return result
     }
 
-    // Initialize from byte array (from storage)
+    // Initializes the pixel data from a byte array and marks the tile as dirty
     fun fromByteArray(data: ByteArray) {
         var byteIndex = 0
         var bitPosition = 7
 
         for (y in 0 until TileManager.TILE_SIZE) {
             for (x in 0 until TileManager.TILE_SIZE) {
-                // Check if this bit is set
                 val byteValue = data[byteIndex].toInt() and 0xFF
                 val filled = (byteValue and (1 shl bitPosition)) != 0
                 pixels[y][x] = filled
-
-                // Move to the next bit position
                 bitPosition--
                 if (bitPosition < 0) {
                     bitPosition = 7
@@ -201,5 +245,6 @@ class Tile(val x: Int, val y: Int) {
                 }
             }
         }
+        isDirty = true // Mark bitmap for regeneration
     }
 }

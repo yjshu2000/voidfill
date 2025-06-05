@@ -29,6 +29,11 @@ class TileCanvasView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
+    private val bitmapPaint = Paint().apply {
+        isAntiAlias = false
+        isFilterBitmap = false
+    }
+
     // Tile management
     private val tileManager = TileManager(context)
 
@@ -39,7 +44,7 @@ class TileCanvasView @JvmOverloads constructor(
 
     // Zoom and pan variables
     // NOTE: replacing the existing scale logic
-    private val zoomLevels = listOf(0.1f, 0.2f, 0.5f, 1.0f, 2.0f, 5.0f, 10.0f)
+    private val zoomLevels = listOf(0.125f, 0.25f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f)
     private var currentZoomIndex = zoomLevels.indexOf(1.0f)
 
     val scale: Float
@@ -85,24 +90,15 @@ class TileCanvasView @JvmOverloads constructor(
         for ((tileX, tileY) in visibleTiles) {
             val tile = tileManager.getTile(tileX, tileY) ?: continue
 
-            // Calculate pixel position in canvas coordinates
-            val startX = tileX * TileManager.TILE_SIZE
-            val startY = tileY * TileManager.TILE_SIZE
+            // Get the cached bitmap for this tile (will build it if dirty)
+            val bitmap = tile.getBitmap()
 
-            // Draw all filled pixels in the tile
-            for (y in 0 until TileManager.TILE_SIZE) {
-                for (x in 0 until TileManager.TILE_SIZE) {
-                    if (tile.getPixel(x, y)) {
-                        canvas.drawRect(
-                            startX + x.toFloat(),
-                            startY + y.toFloat(),
-                            startX + x.toFloat() + 1f,
-                            startY + y.toFloat() + 1f,
-                            blackPaint
-                        )
-                    }
-                }
-            }
+            // Calculate where to draw this tile on the canvas
+            val startX = tileX * TileManager.TILE_SIZE.toFloat()
+            val startY = tileY * TileManager.TILE_SIZE.toFloat()
+
+            // Draw the bitmap for this tile in a single call
+            canvas.drawBitmap(bitmap, startX, startY, bitmapPaint)
         }
 
         canvas.restore()
@@ -209,8 +205,7 @@ class TileCanvasView @JvmOverloads constructor(
                 setPixel(pixelX + x, pixelY + y, true)
             }
         }
-
-        invalidate()
+        //invalidate()
     }
 
     // Implement Bresenham's line algorithm for smooth line drawing
@@ -242,6 +237,7 @@ class TileCanvasView @JvmOverloads constructor(
                 y += sy
             }
         }
+        invalidate()
     }
 
     private fun setPixel(x: Int, y: Int, filled: Boolean) {
@@ -291,39 +287,6 @@ class TileCanvasView @JvmOverloads constructor(
 
         return result
     }
-
-    // Scale gesture listener for pinch-to-zoom
-    /*
-    private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-        private val focusPoint = PointF()
-
-        override fun onScale(detector: ScaleGestureDetector): Boolean {
-            // Store focus point of the scale gesture
-            focusPoint.set(detector.focusX, detector.focusY)
-
-            // Apply scaling factor
-            val oldScale = scale
-            scale *= detector.scaleFactor
-
-            // Clamp scale to min/max values
-            scale = max(minScale, min(scale, maxScale))
-
-            // Adjust translation to keep focus point static
-            if (oldScale != scale) {
-                val scaleFactor = scale / oldScale
-                val focusX = detector.focusX
-                val focusY = detector.focusY
-
-                translateX = focusX - (focusX - translateX) * scaleFactor
-                translateY = focusY - (focusY - translateY) * scaleFactor
-
-                invalidate()
-            }
-
-            return true
-        }
-    }
-    */
 
     // Save any pending tiles (called from activity onPause)
     fun savePendingTiles() {
